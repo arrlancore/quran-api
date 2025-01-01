@@ -1,4 +1,23 @@
 const { data: quran } = require('../../data/quran.json');
+const quranTajweed = require('../../data/quran-tajweed.json');
+
+function mapTajweedToVerses(surahData, surahTajweedData) {
+  console.log('mapping tajweed to verses..');
+  if (!surahData || !surahTajweedData || !surahTajweedData.data || !surahTajweedData.data.ayahs) {
+    return surahData;
+  }
+
+  return {
+    ...surahData,
+    verses: surahData.verses.map((verse, index) => ({
+      ...verse,
+      text: {
+        ...verse.text,
+        arabTajweed: surahTajweedData.data.ayahs[index]?.text || verse.text.arab
+      }
+    }))
+  };
+}
 
 class SurahHandler {
   static getAllSurah(req, res) {
@@ -19,12 +38,14 @@ class SurahHandler {
   static getSurah(req, res) {
     const { surah } = req.params;
     const data = quran[surah - 1];
+    const dataTajweed = quranTajweed[surah - 1];
     if (data) {
+      const mappedData = mapTajweedToVerses(data, dataTajweed);
       return res.status(200).send({
         code: 200,
         status: 'OK.',
         message: 'Success fetching surah.',
-        data
+        data: mappedData
       });
     }
     return res.status(404).send({
