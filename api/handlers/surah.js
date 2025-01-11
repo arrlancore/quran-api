@@ -43,6 +43,7 @@ function mapLatinToVerses(surahData, surahLatinData) {
     verses: surahData.verses.map((verse, index) => ({
       ...verse,
       text: {
+        ...verse.text,
         transliteration: {
           ...verse.text.transliteration,
           id: surahLatinData.data.ayat[index].teksLatin
@@ -95,17 +96,17 @@ class SurahHandler {
 
   static getSurah(req, res) {
     const { surah } = req.params;
-    const data = quran[surah - 1];
-    const dataTajweed = quranTajweed[surah - 1];
-    const dataLatin = quranLatin[surah - 1];
+    let data = quran[surah - 1];
     if (data) {
-      let mappedData = mapTajweedToVerses(data, dataTajweed);
-      mappedData = mapLatinToVerses(mappedData, dataLatin);
+      const dataTajweed = quranTajweed[surah - 1];
+      const dataLatin = quranLatin[surah - 1];
+      data = mapTajweedToVerses(data, dataTajweed);
+      data = mapLatinToVerses(data, dataLatin);
       return res.status(200).send({
         code: 200,
         status: 'OK.',
         message: 'Success fetching surah.',
-        data: mappedData
+        data: data
       });
     }
     return res.status(404).send({
